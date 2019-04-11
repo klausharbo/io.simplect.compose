@@ -15,7 +15,7 @@
 (defmacro Ξ
   [& args]
   `(compose/curry ~@args))
-(u/merge-meta #'Ξ (u/var-arglist-and-doc #'cats/curry))
+(u/merge-meta #'Ξ (u/var-arglist-and-doc #'compose/curry))
 
 (defmacro λ
   [& args]

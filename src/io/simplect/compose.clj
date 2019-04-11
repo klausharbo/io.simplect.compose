@@ -35,30 +35,18 @@
   ([nm docstring form]
    (def-* nm docstring form)))
 
-(def ^:dynamic *instrument?* false)
-
-(defmacro without-instrumentation
-  [& body]
-  `(binding [*instrument?* false]
-     (do ~@body)))
-
-(defmacro with-instrumentation
-  [& body]
-  `(binding [*instrument?* true]
-     (do ~@body)))
-
 (defn- fdef*
-  [nm specpred docstring form]
+  [nm specpred-or-spec docstring form]
   (let [sym (build-sym nm)
-        M (meta nm)
-        instr? (if (find M :instrument) (get M :instrument) *instrument?*)]
+        M (meta nm)]
     `(do ~(if docstring
             `(def ~nm ~docstring ~form)
             `(def ~nm ~form))
-         ~(when specpred
-            `(s/fdef ~nm :args (s/cat ~(keyword (name (gensym))) ~specpred)))
-         ~(when instr?
-            `(t/instrument '~sym))
+         ~(when specpred-or-spec
+            `(s/fdef ~nm :args ~(if (symbol? specpred-or-spec)
+                                  `(s/cat ~(keyword (name (gensym))) ~specpred-or-spec)
+                                  specpred-or-spec)))
+         (t/instrument '~sym)
          '~sym)))
 
 (defmacro fdef
@@ -67,8 +55,8 @@
   taking a single argument.
 
   `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
-  intervening `without-instrumentation` form), (2) the dynamic var `*instrument?*` is truthy, or (3)
-  its metadata contains a truthy value for key `:instrument`.
+  intervening `without-instrumentation` form) or (2) its metadata contains a truthy value for key
+  `:instrument`.
 
   Example:
 
@@ -112,15 +100,16 @@
   [nm docstring arglist spec body]
   (let [sym (build-sym nm)
         M (meta nm)
-        instr? (if (find M :instrument) (get M :instrument) *instrument?*)]
+        instr? (get M :instrument)]
     `(do
        (defn ~nm
          ~@(when docstring [docstring])
          ~arglist
          ~@body)
        (s/fdef ~sym :args ~spec)
-       ~(when instr?
-          `(t/instrument '~sym))
+       ~(if instr?
+          `(t/instrument '~sym)
+          `(t/unstrument '~sym))
        '~sym)))
 
 (defmacro sdefn
@@ -128,8 +117,8 @@
   against `spec`.
 
   `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
-  intervening `without-instrumentation` form), (2) the dynamic var `*instrument?*` is truthy, or (3)
-  its metadata contains a truthy value for key `:instrument`."
+  intervening `without-instrumentation` form) or (2) its metadata contains a truthy value for key
+  `:instrument`."
   [nm spec docstring arglist & body]
   (sdefn* nm docstring arglist spec body))
 
