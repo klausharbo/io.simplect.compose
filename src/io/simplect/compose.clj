@@ -1,10 +1,10 @@
-;   Copyright (c) Klaus Harbo. All rights reserved.
-;   The use and distribution terms for this software are covered by the
-;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
-;   which can be found in the file epl-v10.html at the root of this distribution.
-;   By using this software in any fashion, you are agreeing to be bound by
-;   the terms of this license.
-;   You must not remove this notice, or any other, from this software.
+;;  Copyright (c) Klaus Harbo. All rights reserved.
+;;  The use and distribution terms for this software are covered by the
+;;  Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;;  which can be found in the file epl-v10.html at the root of this distribution.
+;;  By using this software in any fashion, you are agreeing to be bound by
+;;  the terms of this license.
+;;  You must not remove this notice, or any other, from this software.
 
 (ns io.simplect.compose
   (:require
@@ -16,7 +16,9 @@
    [io.simplect.compose.util					:refer [fref]]
    ))
 
-(defn- build-sym [nm] (symbol (str (ns-name *ns*)) (name nm)))
+(defn- build-sym
+  [nm]
+  (symbol (str (ns-name *ns*)) (name nm)))
 
 (defn- def-*
   [nm docstring form]
@@ -35,11 +37,13 @@
 
 (def ^:dynamic *instrument?* false)
 
-(defmacro without-instrumentation [& body]
+(defmacro without-instrumentation
+  [& body]
   `(binding [*instrument?* false]
      (do ~@body)))
 
-(defmacro with-instrumentation [& body]
+(defmacro with-instrumentation
+  [& body]
   `(binding [*instrument?* true]
      (do ~@body)))
 
@@ -58,16 +62,13 @@
          '~sym)))
 
 (defmacro fdef
-  "Defines a function accepting a single value using `def` (instead of
-  `defn`).  The resulting function is instrumented to be checked
-  against `specpred` which must be a predicate function taking a
-  single argument.
+  "Defines a function accepting a single value using `def` (instead of `defn`).  The resulting
+  function is instrumented to be checked against `specpred` which must be a predicate function
+  taking a single argument.
 
-  `nm` will be instrumented iff (1) the form is embedded in
-  `with-instrumentation` (without an intervening
-  `without-instrumentation` form), (2) the dynamic var `*instrument?*`
-  is truthy, or (3) its metadata contains a truthy value for key
-  `:instrument`.
+  `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
+  intervening `without-instrumentation` form), (2) the dynamic var `*instrument?*` is truthy, or (3)
+  its metadata contains a truthy value for key `:instrument`.
 
   Example:
 
@@ -78,7 +79,7 @@
         user> (my-add-3 2.0)
         Execution error - invalid arguments to io.simplect.compose/my-add-3 at (REPL:5).
         2.0 - failed: int? at: [:G__8490]
-        user> "
+        user>"
   ([nm specpred docstring form]
    (fdef* nm specpred docstring form))
   ([nm specpred-or-docstring form]
@@ -123,15 +124,12 @@
        '~sym)))
 
 (defmacro sdefn
-  "Define instrumented function.  Like `clojure.core/defn` but
-  instruments function to be checked against `spec`.
+  "Define instrumented function.  Like `clojure.core/defn` but instruments function to be checked
+  against `spec`.
 
-  `nm` will be instrumented iff (1) the form is embedded in
-  `with-instrumentation` (without an intervening
-  `without-instrumentation` form), (2) the dynamic var `*instrument?*`
-  is truthy, or (3) its metadata contains a truthy value for key
-  `:instrument`.
-"
+  `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
+  intervening `without-instrumentation` form), (2) the dynamic var `*instrument?*` is truthy, or (3)
+  its metadata contains a truthy value for key `:instrument`."
   [nm spec docstring arglist & body]
   (sdefn* nm docstring arglist spec body))
 
@@ -149,14 +147,12 @@
    (sdefn-* nm docstring arglist spec body)))
 
 (defn >->>
-  "Calls `f` with arguments reordered such that the first argument to
-  `>->>` is given to `f` as the last.  The name of the function is
-  meant to suggest that `f` is converted to fit into a '->' context by
-  mapping argument order from `->`-style (arg first) to
-  '->>'-style (arg last).
+  "Calls `f` with arguments reordered such that the first argument to `>->>` is given to `f` as the
+  last.  The name of the function is meant to suggest that `f` is converted to fit into a '->'
+  context by mapping argument order from `->`-style (arg first) to '->>'-style (arg last).
 
-  Can be called without arguments in which case a function reordering
-  arguments is returned (cf. `ex3` below).
+  Can be called without arguments in which case a function reordering arguments is
+  returned (cf. `ex3` below).
 
   Example:
 
@@ -178,14 +174,12 @@
    (fn [& args] (apply f (concat (rest args) [(first args)])))))
 
 (defn >>->
-  "Calls `f` with arguments reordered such that last argument to `>>->`
-  is given to `f` as the first. The name of the function is meant to
-  suggest that `f` is converted to fit into a '->>' context by mapping
-  argument order from `->>`-style (arg last) to '->'-style (arg
-  first).
+  "Calls `f` with arguments reordered such that last argument to `>>->` is given to `f` as the
+  first. The name of the function is meant to suggest that `f` is converted to fit into a '->>'
+  context by mapping argument order from `->>`-style (arg last) to '->'-style (arg first).
 
-  Can be called without arguments in which case a function reordering
-  arguments is returned (cf. `ex3` below).
+  Can be called without arguments in which case a function reordering arguments is
+  returned (cf. `ex3` below).
 
   Example:
 
@@ -208,17 +202,15 @@
   ([f]
    (fn [& args] (apply f (concat (list (last args)) (butlast args))))))
 
-(defn rcomp [& fs]
+(defn rcomp
   "Like `clojure.core/comp` except applies `fs` in reverse order."
+  [& fs]
   (apply comp (reverse fs)))
 
-(fref fmap functor/fmap)
-
 (defn partial>
-  "Like `partial` except it will insert the argument accepted by the
-  returned function between first and second elements of `args` (as
-  opposed to `partial` which adds the argument after those given to
-  it).
+  "Like `partial` except it will insert the argument accepted by the returned function between first
+  and second elements of `args` (as opposed to `partial` which adds the argument after those given
+  to it).
 
   Example:
 
@@ -232,9 +224,8 @@
   (apply partial >>-> args))
 
 (sdefn reorder (s/cat :indices (s/coll-of (s/and int? (complement neg?)) :kind sequential?) :f fn?)
-  "Returns a function which calls `f` with arguments reordered according
-  to `v` which must be a sequential collection of integers all less than
-  the number of arguments.
+  "Returns a function which calls `f` with arguments reordered according to `v` which must be a
+  sequential collection of integers all less than the number of arguments.
 
   Example:
 
@@ -252,11 +243,10 @@
                  {:v v, :max-index mx, :args args}))))))
 
 (defmacro curry
-  "Same as `cats.core/curry` from the Funcool Cats library, its
-  docstring reproduced below for convenience.
+  "Same as `cats.core/curry` from the Funcool Cats library, its docstring reproduced below for
+  convenience.
 
-  Given either a fixed arity function or an arity and a function,
-  return another which is curried.
+  Given either a fixed arity function or an arity and a function, return another which is curried.
 
   With inferred arity (function must have one fixed arity):
 
@@ -281,86 +271,5 @@
   [& args]
   `(cats/curry ~@args))
 
-(defmacro call
-  "Call `f` with `v` as an argument.  Essentially a no-op because
-  `(= (f v) (call f v))` will hold for all pure, total functions. Use
-  to accentuate the function call occurs in complex expressions (and,
-  yes, this macro is indeed form over function since it has none).
-
-  Example:
-
-        user> (count [1 2])
-        2
-        user> (call count [1 2])
-        2
-        user>"
-  [f v]
-  `(~f ~v))
-
-(defmacro call-with
-  "Call `f` with `v` as an argument.  Same as `call` with arguments
-  switched.  Same purpose, to make clear where the function call
-  occurs in complex expressions.
-
-  Example:
-
-        user> (call-with [1 2] count)
-        2
-        user>"
-  [v f]
-  `(~f ~v))
-
-(defn callee
-  "Returns a function which, when called with a function `f`, returns
-  the result of applying `f` to the argument `v`.  Intended to be used
-  mapping of over a collection of (config) functions.
-
-  Example:
-
-        user> (map (callee 11) [inc dec (partial * 10)])
-        (12 10 110)"
-  [v]
-  (fn [f] (f v)))
-
-(defn conjreduce
-  "Reduces collection `coll` using `conj` of the result of applying `f`
-  to each element.  If `incl?` is specified it must a single-argument
-  function used as a predicate indicating whether the element should
-  be included in the reduction.  `incl?` defaults to `(constantly
-  true)`.
-
-  Example:
-
-        user> (conjreduce :a [{:a 1, :b 2} {:a 2, :b 1}])
-        [1 2]
-        user> (conjreduce {:incl? (comp odd? :b)} :a [{:a 1, :b 2} {:a 2, :b 1}])
-        [2]
-        user>"
-  ([f coll]
-   (conjreduce {} f coll))
-  ([{:keys [incl? init] :or {init [], incl? (constantly true)}} f coll]
-   (reduce (fn [α v] (let [r (f v)] (if (incl? v) (conj α r) α))) init coll)))
-
-(defn assocreduce
-  "Reduces collection `coll` applying `assoc` of the result of calling
-  `f` to each element.  `f` must return a pair (vector of 2 elements):
-  the key and val of the resulting entry in the returned map.  If
-  `incl?` is specified it must a single-argument function used as a
-  predicate indicating whether the element should be included in the
-  reduction.  `incl?` defaults to `(constantly true)`.
-
-  Example:
-
-        user> (assocreduce (fn [[k v]] [k (:a v)])
-                           {:one {:a 1, :b 2} :two {:a 2, :b 1}})
-        {:one 1, :two 2}
-        user> (assocreduce {:incl? (comp odd? :b second)}
-                           (fn [[k v]] [k (:a v)])
-                           {:one {:a 1, :b 2} :two {:a 2, :b 1}})
-        {:two 2}
-        user>"
-  ([f coll]
-   (assocreduce {} f coll))
-  ([{:keys [init incl?] :or {init {}, incl? (constantly true)}} f coll]
-   (reduce (fn [α v] (let [r (f v)] (if (incl? v) (apply assoc α r) α))) init coll)))
-
+;; Add fmap from clojure.algo.generic.functor
+(fref fmap functor/fmap)
