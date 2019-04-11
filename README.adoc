@@ -1,6 +1,0 @@
-
-= io.simplect.functional
-
-== First test of README
-
-Here's some body text.
