@@ -218,21 +218,21 @@
   [& fs]
   (apply comp (reverse fs)))
 
-(defn >partial
+(defn partial1
   "Like `partial` except it will insert the argument accepted by the returned function between first
   and second elements of `args` (as opposed to [[partial]] which adds the argument after those given
   to it).
 
   Example:
   ```
-        user> {:ex1 ((>partial assoc :x 2) {:a 1})
+        user> {:ex1 ((partial1 assoc :x 2) {:a 1})
                :ex2 (->> [{:a 1} {:v -1}]
-                         (map (>partial assoc :x 2)))}
+                         (map (partial1 assoc :x 2)))}
         {:ex1 {:a 1, :x 2},
          :ex2 ({:a 1, :x 2} {:v -1, :x 2})}
         user>
   ```
-  `io.simplect.compose.notation` defines the short-hand notation `π` for `>partial` and `Π` for
+  `io.simplect.compose.notation` defines the short-hand notation `π` for `partial1` and `Π` for
   `clojure.core/partial`."
   [& args]
   (apply partial >>-> args))

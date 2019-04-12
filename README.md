@@ -1,5 +1,7 @@
 # README
 
-* [Usage](doc/Usage.md)
-* [Topic 2](doc/topic2.md)
+`io.simplect.compose` provides functions which make it more convenient to use functions as values in
+Clojure.
+
+* See [*Documentation*](doc/index.html) for background and usage of `io.simplect.compose`.
 

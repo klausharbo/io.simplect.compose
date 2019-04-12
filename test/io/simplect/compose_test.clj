@@ -93,8 +93,8 @@
     (is (= 100	(fc 5)))
     (is (= 55	(fr 5)))))
 
-(deftest test->partial
-  (let [f (c/>partial assoc :a 3)]
+(deftest test-partial1
+  (let [f (c/partial1 assoc :a 3)]
     (is (= {:a 3, :b 9} (f {:b 9})))))
 
 (deftest test-reorder
