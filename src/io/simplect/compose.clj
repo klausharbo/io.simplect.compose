@@ -29,7 +29,7 @@
        '~nm))
 
 (defmacro def-
-  "Like `clojure.core/def` except `nm` is private to namespace."
+  "Like [[clojure.core/def]] except `nm` is private to namespace."
   ([nm form]
    (def-* nm nil form))
   ([nm docstring form]
@@ -86,7 +86,7 @@
        '~sym)))
 
 (defmacro fdef-
-  "Like `fdef` except defines a private function."
+  "Like [[fdef]] except defines a private function."
   ([nm specpred docstring form]
    (fdef-* nm specpred docstring form))
   ([nm specpred-or-docstring form]
@@ -98,27 +98,36 @@
 
 (defn- sdefn*
   [nm docstring arglist spec body]
-  (let [sym (build-sym nm)
-        M (meta nm)
-        instr? (get M :instrument)]
+  (let [sym (build-sym nm)]
     `(do
        (defn ~nm
          ~@(when docstring [docstring])
          ~arglist
          ~@body)
-       (s/fdef ~sym :args ~spec)
-       ~(if instr?
-          `(t/instrument '~sym)
-          `(t/unstrument '~sym))
+       (s/fdef ~sym :args ~(if (or (symbol? spec)
+                                   (keyword? spec))
+                             `(s/cat ~(-> (gensym) name keyword) ~spec)
+                             spec))
+       (t/instrument '~sym)
        '~sym)))
 
 (defmacro sdefn
-  "Define instrumented function.  Like `clojure.core/defn` but instruments function to be checked
+  "Define instrumented function.  Like [[clojure.core/defn]] but instruments function to be checked
   against `spec`.
 
-  `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
-  intervening `without-instrumentation` form) or (2) its metadata contains a truthy value for key
-  `:instrument`."
+  Example:
+  ```
+    (sdefn add-to-int
+      (s/cat :int int?)
+      \"Add 2 to `v` which must be an integer.\"
+      [v]
+      (+ v 2))
+
+  user> (add-to-int 4)
+  6
+  user> (try (add-to-int 4.0) (catch Exception _ :err))
+  :err
+  ```"
   [nm spec docstring arglist & body]
   (sdefn* nm docstring arglist spec body))
 
@@ -131,20 +140,26 @@
        '~sym)))
 
 (defmacro sdefn-
-  "Liks `sdefn` except defines a private function."
+  "Define instrumented private function.  Like [[clojure.core/defn]] but instruments private function to
+  be checked against `spec`.  See [[sdefn]] for example of use."
   ([nm spec docstring arglist & body]
    (sdefn-* nm docstring arglist spec body)))
 
 (defn >->>
   "Calls `f` with arguments reordered such that the first argument to `>->>` is given to `f` as the
   last.  The name of the function is meant to suggest that `f` is converted to fit into a '->'
-  context by mapping argument order from `->`-style (arg first) to '->>'-style (arg last).
+  context by mapping argument order from `->`-style (missing arg inserted first) to
+  '->>'-style (missing arg inserted last).
 
   Can be called without arguments in which case a function reordering arguments is
   returned (cf. `ex3` below).
 
   Example:
 
+        user> (-> {:a 1}
+                  (assoc :b 9)
+                  (>->> map str))
+        (\"[:a 1]\" \"[:b 9]\")
         user> (let [f (fn [& args] args)
                     map> (>->> map)]
                 {:ex1 (>->> 1 f 2 3 4 5),
@@ -172,7 +187,10 @@
 
   Example:
 
-        user> (let [f (fn [& args] args)
+       user> (->> {:a 1}
+                  (>>-> assoc :b 1))
+       {:a 1, :b 1} 
+       user> (let [f (fn [& args] args)
                     assoc>> (>>-> assoc)]
                 {:ex1 (>>-> f 1 2 3 4 5),
                  :ex2 (->> {:a 1}
@@ -192,23 +210,30 @@
    (fn [& args] (apply f (concat (list (last args)) (butlast args))))))
 
 (defn rcomp
-  "Like `clojure.core/comp` except applies `fs` in reverse order."
+  "Compose `fs` in order.  Like [[clojure.core/comp]] except applies `fs` in the order they
+  appear (reverse order relative to [[comp]]). 
+
+  `io.simplect.compose.notation` defines the short-hand notation [[Γ]] for [[rcomp]] and
+  [[γ]] for [[clojure.core/comp]]."
   [& fs]
   (apply comp (reverse fs)))
 
-(defn partial>
+(defn >partial
   "Like `partial` except it will insert the argument accepted by the returned function between first
-  and second elements of `args` (as opposed to `partial` which adds the argument after those given
+  and second elements of `args` (as opposed to [[partial]] which adds the argument after those given
   to it).
 
   Example:
-
-        user> {:ex1 ((partial> assoc :x 2) {:a 1})
+  ```
+        user> {:ex1 ((>partial assoc :x 2) {:a 1})
                :ex2 (->> [{:a 1} {:v -1}]
-                         (map (partial> assoc :x 2)))}
+                         (map (>partial assoc :x 2)))}
         {:ex1 {:a 1, :x 2},
          :ex2 ({:a 1, :x 2} {:v -1, :x 2})}
-        user>"
+        user>
+  ```
+  `io.simplect.compose.notation` defines the short-hand notation `π` for `>partial` and `Π` for
+  `clojure.core/partial`."
   [& args]
   (apply partial >>-> args))
 
@@ -256,9 +281,11 @@
       ;; => 6
 
       ((((c+) 1) 2) 3)
-      ;; => 6"
+      ;; => 6
+
+  `io.simplect.compose.notation` defines the short-hand notation `Ξ` for [[curry]]."
   [& args]
   `(cats/curry ~@args))
 
 ;; Add fmap from clojure.algo.generic.functor
-(fref fmap functor/fmap)
+(fref fmap clojure.algo.generic.functor/fmap)

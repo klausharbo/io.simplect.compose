@@ -12,5 +12,5 @@
   [nm fname]
   `(let [m# (var-arglist-and-doc (var ~fname))]
      (def ~nm ~fname)
-     (merge-meta (var ~nm) (update-in m# [:doc] #(str "\nAbbreviation for " '~fname "\n\n" %)))
+     (merge-meta (var ~nm) (update-in m# [:doc] #(str "Notation for [[" '~fname "]].\n\n" %)))
      '~nm))

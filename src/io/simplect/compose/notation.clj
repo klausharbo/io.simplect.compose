@@ -8,23 +8,26 @@
 
 (ns io.simplect.compose.notation
   (:require
-   [clojure.core				:as core]
-   [io.simplect.compose				:as compose]
+   [clojure.core]
+   [io.simplect.compose]
    [io.simplect.compose.util			:as u]))
 
 (defmacro Ξ
+  "Abbreviated form of [[io.simplect.compose/curry]]."
   [& args]
-  `(compose/curry ~@args))
-(u/merge-meta #'Ξ (u/var-arglist-and-doc #'compose/curry))
+  `(io.simplect.compose/curry ~@args))
+(u/merge-meta #'Ξ (u/var-arglist-and-doc #'io.simplect.compose/curry))
+(alter-meta! #'Ξ (fn [m] (update-in m [:doc] #(str "Abbreviated form of [[io.simplect.compose/curry]].\n\n" %))))
 
 (defmacro λ
   [& args]
   `(fn ~@args))
 (u/merge-meta #'λ (u/var-arglist-and-doc #'fn))
+(alter-meta! #'λ (fn [m] (update-in m [:doc] #(str "Abbreviated form of [[clojure.core/fn]].\n\n" %))))
 
-(u/fref Π core/partial)
-(u/fref π compose/partial>)
-(u/fref γ core/comp)
-(u/fref Γ compose/rcomp)
-(u/fref μ core/map)
-(u/fref ρ core/reduce)
+(u/fref Π clojure.core/partial)
+(u/fref π io.simplect.compose/>partial)
+(u/fref γ clojure.core/comp)
+(u/fref Γ io.simplect.compose/rcomp)
+(u/fref μ clojure.core/map)
+(u/fref ρ clojure.core/reduce)
