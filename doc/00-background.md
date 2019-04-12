@@ -25,7 +25,7 @@ which permits you to build more complex expressions while maintaining reasonable
 going on.
 
 However, there are disadvantages to using this style too much: Big expressions are not very flexible
-because it leaves the functionality of your program nested inside expressions where they cannot be
+because they leave the functionality of your program nested inside expressions where they cannot be
 reused.
 
 The above very simple example consists of pieces of functionality: Multiplying by 2, Adding 3 and

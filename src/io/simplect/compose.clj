@@ -135,8 +135,8 @@
        '~sym)))
 
 (defmacro sdefn-
-  "Define instrumented private function.  Like [[clojure.core/defn]] but instruments private function to
-  be checked against `spec`.  See [[sdefn]] for example of use."
+  "Define instrumented private function.  Like [[clojure.core/defn]] but instruments private function
+  to be checked against `spec`.  See [[sdefn]] for example of use."
   ([nm spec docstring arglist & body]
    (sdefn-* nm docstring arglist spec body)))
 
@@ -147,7 +147,7 @@
   '->>'-style (missing arg inserted last).
 
   Can be called without arguments in which case a function reordering arguments is
-  returned (cf. `ex3` below).
+  returned (cf. `ex3` in the example below).
 
   Example:
 
@@ -178,7 +178,7 @@
   context by mapping argument order from `->>`-style (arg last) to '->'-style (arg first).
 
   Can be called without arguments in which case a function reordering arguments is
-  returned (cf. `ex3` below).
+  returned (cf. `ex3` in the example below).
 
   Example:
 
@@ -205,8 +205,8 @@
    (fn [& args] (apply f (concat (list (last args)) (butlast args))))))
 
 (defn rcomp
-  "Compose `fs` in order.  Like [[clojure.core/comp]] except applies `fs` in the order they
-  appear (reverse order relative to [[comp]]). 
+  "Compose `fs` in order.  Like [[clojure.core/comp]] except applies `fs` in the order they appear
+  (reverse order relative to [[comp]]). 
 
   `io.simplect.compose.notation` defines the short-hand notation [[Γ]] for [[rcomp]] and
   [[γ]] for [[clojure.core/comp]]."
