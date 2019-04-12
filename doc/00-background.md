@@ -58,7 +58,7 @@ using `partial` thus avoiding the introductrion of a named variable:
 (def div4  #(/ % 4))
 ```
 
-Notiec that, since `partial` will add arguments to the *end*, we must use different style of definition for
+Notice that, since `partial` will add arguments to the *end*, we must use different style of definition for
 `div4`. The above definitions are equivalent to the originals:
 
 ```
@@ -104,10 +104,10 @@ adds short names (greek letters) for some the operators. Specifically, `notation
 LETTER GAMMA`) to mean `comp`, allowing us to define the original operation as
 
 ```
-(def op  (γ div4 add3 mult2))
+(def op (γ div4 add3 mult2))
 ```
 
-or (equivalent) 
+or, equivalently and perhaps more intuitively, as
 
 ```
 (def op (Γ mult2 add3 div4))
@@ -119,8 +119,32 @@ or perhaps simply as
 (def op (Γ (Π * 2) (Π + 3) (π / 4)))
 ```
 
-which lumps the individual operations back together but illustrates the succinctness of point-free
-function definitions and the operators of `notation`.
+although this form lumps the individual operations back together but illustrates the succinctness of
+point-free function definitions and the operators of `notation`.
 
-In many situations using `rcomp` ns thus applying functions in the order they appear makes the
+In many situations using `rcomp` thus applying functions in the order they appear makes the
 expression easier to understand than using `comp` which applies them in reverse order.
+
+To close off the example the definitions
+
+```
+(def mult2 (π * 2))
+(def add3  (π + 3))
+(def div4  (π / 4))
+
+(def op (Γ mult2 add3 div4))
+```
+
+seem to strike an attractive balance, with clear code structure, the ability to test each part
+separately and retaining the possibility of reusing each constituent part. (The definitions of
+`mult2` and `add3` were adjusted to use `π` to eliminate arbitrary, unnecessary variation.) In this
+case avoiding named arguments appears to help keep the code simple and easy to understand.
+
+`compose` strives to make it easier to program like this.
+
+### PS
+
+`compose` makes no claims of originality.  It merely assembles functionality the author has found
+useful in his own quest towards a more functional programming style, some of which is lifted from
+[Clojure standard libraries](https://github.com/clojure/algo.generic) (`fmap`) or [Funcool
+cats](http://funcool.github.io/cats/latest/) (`curry`).  (Thanks!)

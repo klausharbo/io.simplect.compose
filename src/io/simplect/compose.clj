@@ -43,7 +43,7 @@
             `(def ~nm ~docstring ~form)
             `(def ~nm ~form))
          ~(when specpred-or-spec
-            `(s/fdef ~nm :args ~(if (symbol? specpred-or-spec)
+            `(s/fdef ~nm :args ~(if (or (symbol? specpred-or-spec) (keyword? specpred-or-spec))
                                   `(s/cat ~(keyword (name (gensym))) ~specpred-or-spec)
                                   specpred-or-spec)))
          (t/instrument '~sym)
@@ -51,12 +51,7 @@
 
 (defmacro fdef
   "Defines a function accepting a single value using `def` (instead of `defn`).  The resulting
-  function is instrumented to be checked against `specpred` which must be a predicate function
-  taking a single argument.
-
-  `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
-  intervening `without-instrumentation` form) or (2) its metadata contains a truthy value for key
-  `:instrument`.
+  function which is instrumented to be checked against `specpred`.
 
   Example:
 
@@ -68,8 +63,8 @@
         Execution error - invalid arguments to io.simplect.compose/my-add-3 at (REPL:5).
         2.0 - failed: int? at: [:G__8490]
         user>"
-  ([nm specpred docstring form]
-   (fdef* nm specpred docstring form))
+  ([nm specpred-or-spec docstring form]
+   (fdef* nm specpred-or-spec docstring form))
   ([nm specpred-or-docstring form]
    (if (string? specpred-or-docstring)
      (fdef* nm nil specpred-or-docstring form)
