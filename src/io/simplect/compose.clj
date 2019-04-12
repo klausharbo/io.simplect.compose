@@ -43,7 +43,7 @@
             `(def ~nm ~docstring ~form)
             `(def ~nm ~form))
          ~(when specpred-or-spec
-            `(s/fdef ~nm :args ~(if (symbol? specpred-or-spec)
+            `(s/fdef ~nm :args ~(if (or (symbol? specpred-or-spec) (keyword? specpred-or-spec))
                                   `(s/cat ~(keyword (name (gensym))) ~specpred-or-spec)
                                   specpred-or-spec)))
          (t/instrument '~sym)
@@ -51,12 +51,7 @@
 
 (defmacro fdef
   "Defines a function accepting a single value using `def` (instead of `defn`).  The resulting
-  function is instrumented to be checked against `specpred` which must be a predicate function
-  taking a single argument.
-
-  `nm` will be instrumented iff (1) the form is embedded in `with-instrumentation` (without an
-  intervening `without-instrumentation` form) or (2) its metadata contains a truthy value for key
-  `:instrument`.
+  function which is instrumented to be checked against `specpred`.
 
   Example:
 
@@ -68,8 +63,8 @@
         Execution error - invalid arguments to io.simplect.compose/my-add-3 at (REPL:5).
         2.0 - failed: int? at: [:G__8490]
         user>"
-  ([nm specpred docstring form]
-   (fdef* nm specpred docstring form))
+  ([nm specpred-or-spec docstring form]
+   (fdef* nm specpred-or-spec docstring form))
   ([nm specpred-or-docstring form]
    (if (string? specpred-or-docstring)
      (fdef* nm nil specpred-or-docstring form)
@@ -140,8 +135,8 @@
        '~sym)))
 
 (defmacro sdefn-
-  "Define instrumented private function.  Like [[clojure.core/defn]] but instruments private function to
-  be checked against `spec`.  See [[sdefn]] for example of use."
+  "Define instrumented private function.  Like [[clojure.core/defn]] but instruments private function
+  to be checked against `spec`.  See [[sdefn]] for example of use."
   ([nm spec docstring arglist & body]
    (sdefn-* nm docstring arglist spec body)))
 
@@ -152,7 +147,7 @@
   '->>'-style (missing arg inserted last).
 
   Can be called without arguments in which case a function reordering arguments is
-  returned (cf. `ex3` below).
+  returned (cf. `ex3` in the example below).
 
   Example:
 
@@ -183,7 +178,7 @@
   context by mapping argument order from `->>`-style (arg last) to '->'-style (arg first).
 
   Can be called without arguments in which case a function reordering arguments is
-  returned (cf. `ex3` below).
+  returned (cf. `ex3` in the example below).
 
   Example:
 
@@ -210,29 +205,29 @@
    (fn [& args] (apply f (concat (list (last args)) (butlast args))))))
 
 (defn rcomp
-  "Compose `fs` in order.  Like [[clojure.core/comp]] except applies `fs` in the order they
-  appear (reverse order relative to [[comp]]). 
+  "Compose `fs` in order.  Like [[clojure.core/comp]] except applies `fs` in the order they appear
+  (reverse order relative to [[comp]]). 
 
   `io.simplect.compose.notation` defines the short-hand notation [[Γ]] for [[rcomp]] and
   [[γ]] for [[clojure.core/comp]]."
   [& fs]
   (apply comp (reverse fs)))
 
-(defn >partial
+(defn partial1
   "Like `partial` except it will insert the argument accepted by the returned function between first
   and second elements of `args` (as opposed to [[partial]] which adds the argument after those given
   to it).
 
   Example:
   ```
-        user> {:ex1 ((>partial assoc :x 2) {:a 1})
+        user> {:ex1 ((partial1 assoc :x 2) {:a 1})
                :ex2 (->> [{:a 1} {:v -1}]
-                         (map (>partial assoc :x 2)))}
+                         (map (partial1 assoc :x 2)))}
         {:ex1 {:a 1, :x 2},
          :ex2 ({:a 1, :x 2} {:v -1, :x 2})}
         user>
   ```
-  `io.simplect.compose.notation` defines the short-hand notation `π` for `>partial` and `Π` for
+  `io.simplect.compose.notation` defines the short-hand notation `π` for `partial1` and `Π` for
   `clojure.core/partial`."
   [& args]
   (apply partial >>-> args))

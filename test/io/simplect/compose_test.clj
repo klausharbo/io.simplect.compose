@@ -20,9 +20,18 @@
   (fn [a b]
     (+ a b)))
 
+(s/def ::int int?)
+
+(c/fdef- myfn-int3
+  (s/cat :int ::int)
+  (fn [a]
+    (+ a 9)))
+
 (deftest test-fdef
   (is (= 10	(try (myfn-int 9) (catch Exception _ :err))))
   (is (= :err	(try (myfn-int 9.0) (catch Exception _ :err))))
+  (is (= 12	(try (myfn-int3 3) (catch Exception _ :err))))
+  (is (= :err	(try (myfn-int3 9.0) (catch Exception _ :err))))
   (is (= 13	(try (myfn-int2 6 7) (catch Exception _ :err))))
   (is (= :err	(try (myfn-int2 6.0 7) (catch Exception _ :err))))
   (is (= :err	(try (myfn-int2 6 7.0) (catch Exception _ :err))))
@@ -93,8 +102,8 @@
     (is (= 100	(fc 5)))
     (is (= 55	(fr 5)))))
 
-(deftest test->partial
-  (let [f (c/>partial assoc :a 3)]
+(deftest test-partial1
+  (let [f (c/partial1 assoc :a 3)]
     (is (= {:a 3, :b 9} (f {:b 9})))))
 
 (deftest test-reorder
